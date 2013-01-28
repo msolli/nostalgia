@@ -1,0 +1,9 @@
+img.image-main.dither src=FlickRaw.url_z(@photo) width=384
+
+h2.title = @photo.title
+
+- if @photo.description.present?
+  p.description = @photo.description
+
+p.date_taken
+  | Photo taken on #{l(Date.parse(@photo.dates["taken"]), format: :long)}.

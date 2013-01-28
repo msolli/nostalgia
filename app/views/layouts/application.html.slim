@@ -1,0 +1,14 @@
+doctype html
+
+html
+  head
+    title Nostalgia
+    = stylesheet_link_tag "application", :media => "all"
+    = csrf_meta_tags
+
+  body
+    header.header-main.container
+      p.tagline The Good Old Days
+      = image_tag("header.png", class: "header-image")
+    .page.container
+      = yield
