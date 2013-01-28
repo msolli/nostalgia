@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 class MetaController < ApplicationController
   respond_to :json
 
@@ -12,8 +13,8 @@ class MetaController < ApplicationController
       owner_email: "msolli@gmail.com",
       publication_api_version: "1.0",
       name: "Nostalgia",
-      description: "A photo from your <a href='http://www.flickr.com'>Flickr</a> photostream from this date, any year in the past.",
-      delivered_on: "every day there is a photo in your Flickr photostream from this date, any year in the past",
+      description: "A photo from your <a href='http://www.flickr.com'>Flickr</a> photostream from today on a corresponding date in the past.",
+      delivered_on: "whenever there’s a photo in your Flickr photostream from the corresponding date in the past",
       send_timezone_info: true,
       send_delivery_count: false,
       external_configuration: true
