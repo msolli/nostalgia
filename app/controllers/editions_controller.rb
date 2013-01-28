@@ -12,7 +12,7 @@ class EditionsController < ApplicationController
   end
 
   def sample
-    @photo = flickr.photos.getInfo(photo_id: "2182143791")
+    @photo = flickr.photos.getInfo(photo_id: "4022770048")
     render "show"
   end
 
