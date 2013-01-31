@@ -5,14 +5,19 @@ class EditionsController < ApplicationController
     user = User.find_by_access_token(access_token)
     date = Date.parse local_delivery_time
     if stale?(etag: date.strftime + access_token, public: true)
-      unless @photo = FlickrSearch.from_user(user).random_from_date(date)
-        render nothing: true, status: :ok
+      query = { user: user.id, date: date }
+      @photo = Rails.cache.fetch(query) do
+        FlickrSearch.from_user(user).random_from_date(date)
       end
+      render nothing: true, status: :ok unless @photo
     end
   end
 
   def sample
-    @photo = flickr.photos.getInfo(photo_id: "4022770048")
+    query = { photo_id: "4022770048" }
+    @photo = Rails.cache.fetch(query) do
+      flickr.photos.getInfo(query)
+    end
     render "show"
   end
 

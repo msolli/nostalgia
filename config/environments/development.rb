@@ -41,4 +41,7 @@ Nostalgia::Application.configure do
   # absolute. See the FAQ: http://remote.bergcloud.com/developers/faq/
   # config.action_controller.asset_host = "http://dg9f.t.proxylocal.com"
 
+  # Memcached / Dalli config
+  config.cache_store = :dalli_store, { expires_in: 1.day, compress: true }
+
 end
