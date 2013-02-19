@@ -7,7 +7,9 @@ class EditionsController < ApplicationController
     if stale?(etag: date.strftime + access_token, public: true)
       query = { user: user.id, date: date }
       @photo = Rails.cache.fetch(query) do
-        FlickrSearch.from_user(user).random_from_date(date)
+        benchmark("Fetching random image from Flickr") do
+          FlickrSearch.from_user(user).random_from_date(date)
+        end
       end
       render nothing: true, status: :ok unless @photo
     end
