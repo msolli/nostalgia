@@ -8,10 +8,16 @@ class AuthController < ApplicationController
   end
 
   def oauth_return
-    access = flickr.get_access_token(oauth_token, session[:oauth_token_secret], oauth_verifier)
+    access = flickr.get_access_token(oauth_token,
+                                     session[:oauth_token_secret],
+                                     oauth_verifier)
 
     nsid = URI.decode(access['user_nsid'])
-    user_attrs = { access_token: access['oauth_token'], access_secret: access['oauth_token_secret'], name: URI.decode(access['fullname']) }
+    user_attrs = {
+      access_token: access['oauth_token'],
+      access_secret: access['oauth_token_secret'],
+      name: URI.decode(access['fullname'])
+    }
 
     user = User.where(nsid: nsid).first_or_create!
     user.update_attributes!(user_attrs)
