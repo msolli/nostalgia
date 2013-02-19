@@ -1,4 +1,5 @@
 class FlickrSearch
+  include ActiveSupport::Benchmarkable
   attr_accessor :flickr
 
   def initialize(flickr)
@@ -6,37 +7,22 @@ class FlickrSearch
   end
 
   def random_from_date(date)
-    dates = []
-    (1..20).to_a.reverse.each do |i|
-      dates << (date - i.years).strftime
-      dates << (date + 1.day - i.years).strftime
-    end
-    counts = flickr.photos.getCounts(taken_dates: dates.join(","))
+    counts = get_flickr_counts(date)
 
-    counts = counts.to_a.select do |c|
-      fromdate = Date.parse c["fromdate"]
-      todate = Date.parse c["todate"]
-      todate - fromdate == 1 && c["count"].to_i > 0
+    benchmark("  Checking for photos in result") do
+      counts = counts.to_a.select do |c|
+        fromdate = Date.parse c["fromdate"]
+        todate = Date.parse c["todate"]
+        todate - fromdate == 1 && c["count"].to_i > 0
+      end
     end
     return nil if counts.empty?
 
-    weighted_array = []
-    counts.each_with_index do |count, i|
-      count["count"].to_i.times { weighted_array << i }
-    end
-    random_count = counts[weighted_array.sample]
+    random_year = select_random_year(counts)
 
-    search_options = {
-      user_id: "me",
-      min_taken_date: random_count["fromdate"],
-      max_taken_date: random_count["todate"],
-      media: "photos",
-      per_page: 500,
-      extras: "description"
-    }
-    photo = flickr.photos.search(search_options).to_a.sample
+    photo = get_random_photo(random_year)
 
-    flickr.photos.getInfo(photo_id: photo.id)
+    get_photo_info(photo)
   end
 
   class << self
@@ -46,5 +32,52 @@ class FlickrSearch
       flickr.access_secret = user.access_secret
       new(flickr)
     end
+  end
+
+  private
+
+  def get_flickr_counts(date)
+    benchmark("  Fetching Flickr counts") do
+      dates = []
+      (1..20).to_a.reverse.each do |i|
+        dates << (date - i.years).strftime
+        dates << (date + 1.day - i.years).strftime
+      end
+      flickr.photos.getCounts(taken_dates: dates.join(","))
+    end
+  end
+
+  def select_random_year(counts)
+    benchmark("  Select random year from result") do
+      weighted_array = []
+      counts.each_with_index do |count, i|
+        count["count"].to_i.times { weighted_array << i }
+      end
+      counts[weighted_array.sample]
+    end
+  end
+
+  def get_random_photo(year)
+    benchmark("  Fetching photos from selected year") do
+      search_options = {
+        user_id: "me",
+        min_taken_date: year["fromdate"],
+        max_taken_date: year["todate"],
+        media: "photos",
+        per_page: 500,
+        extras: "description"
+      }
+      flickr.photos.search(search_options).to_a.sample
+    end
+  end
+
+  def get_photo_info(photo)
+    benchmark("  Fetching photo info from Flickr") do
+      flickr.photos.getInfo(photo_id: photo.id)
+    end
+  end
+
+  def logger
+    Rails.logger
   end
 end
