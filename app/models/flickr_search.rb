@@ -8,22 +8,24 @@ class FlickrSearch
   end
 
   def random_from_date(date)
-    counts = get_flickr_counts(date)
+    with_timeout do
+      counts = get_flickr_counts(date)
 
-    benchmark("  Checking for photos in result") do
-      counts = counts.to_a.select do |c|
-        fromdate = Date.parse c["fromdate"]
-        todate = Date.parse c["todate"]
-        todate - fromdate == 1 && c["count"].to_i > 0
+      benchmark("  Checking for photos in result") do
+        counts = counts.to_a.select do |c|
+          fromdate = Date.parse c["fromdate"]
+          todate = Date.parse c["todate"]
+          todate - fromdate == 1 && c["count"].to_i > 0
+        end
       end
+      return nil if counts.empty?
+
+      random_year = select_random_year(counts)
+
+      photo = get_random_photo(random_year)
+
+      get_photo_info(photo)
     end
-    return nil if counts.empty?
-
-    random_year = select_random_year(counts)
-
-    photo = get_random_photo(random_year)
-
-    get_photo_info(photo)
   end
 
   class << self
@@ -87,5 +89,17 @@ class FlickrSearch
 
   def logger
     Rails.logger
+  end
+
+  def with_timeout
+    # HTTP Configuration - https://github.com/bdurand/http_configuration
+    options = {
+      read_timeout: ENV.fetch("HTTP_READ_TIMEOUT", 8).to_i,
+      open_timeout: ENV.fetch("HTTP_OPEN_TIMEOUT", 1).to_i
+    }
+    config = Net::HTTP::Configuration.new(options)
+    config.apply do
+      yield
+    end
   end
 end
