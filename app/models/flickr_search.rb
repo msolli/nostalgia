@@ -1,5 +1,6 @@
 class FlickrSearch
   include ActiveSupport::Benchmarkable
+  include Retriable
   attr_accessor :flickr
 
   def initialize(flickr)
@@ -43,7 +44,10 @@ class FlickrSearch
         dates << (date - i.years).strftime
         dates << (date + 1.day - i.years).strftime
       end
-      flickr.photos.getCounts(taken_dates: dates.join(","))
+
+      with_retries("fetch Flickr counts") do
+        flickr.photos.getCounts(taken_dates: dates.join(","))
+      end
     end
   end
 
@@ -58,7 +62,7 @@ class FlickrSearch
   end
 
   def get_random_photo(year)
-    benchmark("  Fetching photos from selected year") do
+    benchmark("  Fetching photos between #{year['fromdate']} and #{year['todate']}") do
       search_options = {
         user_id: "me",
         min_taken_date: year["fromdate"],
@@ -67,13 +71,17 @@ class FlickrSearch
         per_page: 500,
         extras: "description"
       }
-      flickr.photos.search(search_options).to_a.sample
+      with_retries("fetch photos from selected date") do
+        flickr.photos.search(search_options).to_a.sample
+      end
     end
   end
 
   def get_photo_info(photo)
     benchmark("  Fetching photo info from Flickr") do
-      flickr.photos.getInfo(photo_id: photo.id)
+      with_retries("fetch photo info from Flickr") do
+        flickr.photos.getInfo(photo_id: photo.id)
+      end
     end
   end
 
