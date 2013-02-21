@@ -21,11 +21,12 @@ module Retriable
       yield
     rescue *exceptions => e
       if retries > 0
-        logger.info("      Caught exception: #{e.message}")
         logger.info("      Trying #{retries} more time#{ retries > 1 && 's' }")
         retries -= 1
         retry
       else
+        logger.info("      Failed after #{options[:limit]} tries")
+        logger.info("      Re-raising exception: #{e.message}")
         raise e
       end
     end
