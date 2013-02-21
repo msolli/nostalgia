@@ -17,16 +17,15 @@ module Retriable
 
     retries = options[:limit] - 1
     begin
-      logger.info("    Trying to #{message}")
+      logger.info("    Trying to #{message}.")
       yield
     rescue *exceptions => e
       if retries > 0
-        logger.info("      Trying #{retries} more time#{ retries > 1 && 's' }")
+        logger.info("      Trying #{retries} more time#{ retries > 1 ? 's' : '' }.")
         retries -= 1
         retry
       else
-        logger.info("      Failed after #{options[:limit]} tries")
-        logger.info("      Re-raising exception: #{e.message}")
+        logger.info("      Failed after #{options[:limit]} tries, re-raising exception.")
         raise e
       end
     end
