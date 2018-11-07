@@ -1,6 +1,8 @@
 # Nostalgia #
 
-Nostalgia is a Little Printer publication that delivers a photo from
+[R.I.P. Little Printer](https://www.dezeen.com/2014/09/09/little-printer-design-company-berg-to-close/)
+
+Nostalgia was a Little Printer publication that delivered a photo from
 your Flickr photostream from today's date, any year in the past.
 
 It's a simple Rails application that's designed to run on Heroku.
